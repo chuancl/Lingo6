@@ -139,16 +139,19 @@ export const AnkiSection: React.FC<AnkiSectionProps> = ({ config, setConfig }) =
       const pEnSplit = splitAroundWord(entry.contextParagraphTranslation || '', entry.text);
 
       // Audio URLs (Youdao API)
-      const audioUsUrl = `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(entry.text)}&type=2`;
-      const audioUkUrl = `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(entry.text)}&type=1`;
+      // Using le=en parameter as per latest API behavior for English learners
+      const audioUsUrl = `https://dict.youdao.com/dictvoice?le=en&audio=${encodeURIComponent(entry.text)}&type=2`;
+      const audioUkUrl = `https://dict.youdao.com/dictvoice?le=en&audio=${encodeURIComponent(entry.text)}&type=1`;
       
       // Generate Speaker Icon HTML
-      const speakerIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>`;
+      // Inline styles are used to ensure correct rendering in Anki web view and desktop
+      const speakerIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>`;
 
       const generateAudioHtml = (url: string) => {
-          // Use inline onclick for better compatibility with Anki and Preview
-          // Adding preload='auto' as per suggestion
-          return `<span class="audio-btn" style="cursor:pointer; margin-left:4px; vertical-align:middle; color:#3b82f6; display:inline-flex; align-items:center;" onclick="var a=this.querySelector('audio'); if(a){a.currentTime=0;a.play();}">${speakerIcon}<audio src="${url}" preload="auto"></audio></span>`;
+          // Wrap in a span that acts as a button. 
+          // onclick JS is embedded to play the child audio element.
+          // This avoids needing external JS files in Anki.
+          return `<span class="audio-btn" style="cursor:pointer; margin-left:4px; vertical-align:middle; color:#3b82f6; display:inline-flex; align-items:center;" onclick="var a=this.querySelector('audio'); if(a){a.currentTime=0;a.play();event.stopPropagation();}" title="点击播放">${speakerIcon}<audio src="${url}" preload="auto"></audio></span>`;
       };
       
       const map: Record<string, string> = {
@@ -286,8 +289,8 @@ export const AnkiSection: React.FC<AnkiSectionProps> = ({ config, setConfig }) =
      { code: '{{word}}', desc: '英文单词' },
      { code: '{{phonetic_us}}', desc: '美式音标' },
      { code: '{{phonetic_uk}}', desc: '英式音标' },
-     { code: '{{audio_us}}', desc: '美式发音 (喇叭图标)' },
-     { code: '{{audio_uk}}', desc: '英式发音 (喇叭图标)' },
+     { code: '{{audio_us}}', desc: '美式发音 (包含音频标签的按钮)' },
+     { code: '{{audio_uk}}', desc: '英式发音 (包含音频标签的按钮)' },
      { code: '{{def_cn}}', desc: '单词中文释义' },
      { code: '{{context_meaning}}', desc: '单词在中文原文中的含义' },
      { code: '{{dict_example}}', desc: '英文例句' },

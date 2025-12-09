@@ -212,7 +212,10 @@ const DEFAULT_ANKI_FRONT = `
   <script>
     setTimeout(function() {
       var btn = document.querySelector('.phonetics .audio-btn audio');
-      if(btn) { btn.play().catch(function(){}); }
+      if(btn) { 
+        // Try to play automatically for reviewing
+        btn.play().catch(function(){}); 
+      }
     }, 500);
   </script>
 </div>
@@ -226,6 +229,8 @@ const DEFAULT_ANKI_FRONT = `
 .phonetic-group { display: flex; align-items: center; }
 .flag { margin-right: 6px; filter: grayscale(0.2); font-size: 18px; }
 .ipa { margin-right: 4px; }
+.audio-btn { cursor: pointer; color: #3b82f6; transition: color 0.2s; }
+.audio-btn:hover { color: #2563eb; }
 
 .context-section { margin-top: 30px; padding: 20px; background: #f8fafc; border-radius: 12px; text-align: left; border: 1px solid #e2e8f0; }
 .paragraph { color: #475569; font-size: 16px; line-height: 1.6; }
@@ -294,6 +299,8 @@ const DEFAULT_ANKI_BACK = `
 .phonetic-group { display: flex; align-items: center; }
 .flag { margin-right: 6px; filter: grayscale(0.2); font-size: 16px; }
 .ipa { margin-right: 4px; }
+.audio-btn { cursor: pointer; color: #3b82f6; transition: color 0.2s; }
+.audio-btn:hover { color: #2563eb; }
 
 .context-section { text-align: left; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
 .paragraph { margin-bottom: 10px; font-size: 15px; line-height: 1.5; color: #475569; }

@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { AnkiConfig, WordEntry, WordCategory } from '../../types';
-import { RefreshCw, Wifi, Info, PlusCircle, ChevronDown, Layers, Calendar, Code, Eye, HelpCircle, X, Copy, BookOpen } from 'lucide-react';
+import { RefreshCw, Wifi, Info, PlusCircle, ChevronDown, Layers, Calendar, Code, Eye, BookOpen, X, Copy } from 'lucide-react';
 import { pingAnki, addNotesToAnki, getCardsInfo } from '../../utils/anki-client';
 import { entriesStorage } from '../../utils/storage';
 import { Toast, ToastMessage } from '../ui/Toast';
@@ -143,11 +143,12 @@ export const AnkiSection: React.FC<AnkiSectionProps> = ({ config, setConfig }) =
       const audioUkUrl = `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(entry.text)}&type=1`;
       
       // Generate Speaker Icon HTML
-      const speakerIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>`;
+      const speakerIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>`;
 
       const generateAudioHtml = (url: string) => {
           // Use inline onclick for better compatibility with Anki and Preview
-          return `<span class="audio-btn" style="cursor:pointer; margin-left:4px; vertical-align:middle; color:#3b82f6; display:inline-flex; align-items:center;" onclick="var a=this.querySelector('audio'); if(a){a.currentTime=0;a.play();}">${speakerIcon}<audio src="${url}" preload="none"></audio></span>`;
+          // Adding preload='auto' as per suggestion
+          return `<span class="audio-btn" style="cursor:pointer; margin-left:4px; vertical-align:middle; color:#3b82f6; display:inline-flex; align-items:center;" onclick="var a=this.querySelector('audio'); if(a){a.currentTime=0;a.play();}">${speakerIcon}<audio src="${url}" preload="auto"></audio></span>`;
       };
       
       const map: Record<string, string> = {
@@ -395,7 +396,7 @@ export const AnkiSection: React.FC<AnkiSectionProps> = ({ config, setConfig }) =
                 
                 {/* Left Column: Template Editor */}
                 <div className="flex flex-col h-full">
-                    <div className="flex items-center justify-between mb-4 h-[38px]">
+                    <div className="flex items-center justify-between mb-4 h-[42px]">
                         <h3 className="text-sm font-bold text-slate-800 flex items-center">
                             <Code className="w-4 h-4 mr-2 text-slate-500"/> 
                             卡片模板编辑器
@@ -440,7 +441,7 @@ export const AnkiSection: React.FC<AnkiSectionProps> = ({ config, setConfig }) =
 
                 {/* Right Column: Preview */}
                 <div className="flex flex-col h-full">
-                    <div className="flex items-center justify-between mb-4 h-[38px]">
+                    <div className="flex items-center justify-between mb-4 h-[42px]">
                         <h3 className="text-sm font-bold text-slate-800 flex items-center">
                             <Eye className="w-4 h-4 mr-2 text-slate-500"/> 
                             卡片效果预览 ({activeTemplate === 'front' ? 'Front' : 'Back'})

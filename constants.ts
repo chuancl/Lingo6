@@ -1,3 +1,4 @@
+
 import { StyleConfig, WordCategory, Scenario, TranslationEngine, WordInteractionConfig, PageWidgetConfig, AnkiConfig, OriginalTextConfig, MergeStrategyConfig, AutoTranslateConfig, DictionaryEngine } from './types';
 
 export const DEFAULT_STYLE: StyleConfig = {
@@ -175,22 +176,94 @@ export const DEFAULT_AUTO_TRANSLATE: AutoTranslateConfig = {
 };
 
 const DEFAULT_ANKI_FRONT = `
-<div class="card">
-  <div class="word">{{word}}</div>
-  <div class="phonetic">{{phonetic}}</div>
-  <div class="sentence">{{sentence-a}}<b>{{word}}</b>{{sentence-e}}</div>
+<div class="card front">
+  <div class="header">
+    <div class="word">{{word}}</div>
+    <div class="phonetics">
+      <span class="us">🇺🇸 {{phonetic_us}}</span>
+      <span class="uk">🇬🇧 {{phonetic_uk}}</span>
+    </div>
+    <!-- 默认朗读脚本需在 Anki 模板设置中添加，此处仅为结构 -->
+  </div>
+
+  <div class="context-section">
+    <div class="paragraph">
+      {{paragraph_en_prefix}}<b class="target-word">{{word}}</b>{{paragraph_en_suffix}}
+    </div>
+    <div class="sentence-highlight">
+      {{sentence_en_prefix}}<b class="target-word">{{word}}</b>{{sentence_en_suffix}}
+    </div>
+  </div>
+
+  <div class="example-section">
+    <div class="dict-example">{{dict_example}}</div>
+  </div>
+
+  <div class="image-section">
+    {{image}}
+  </div>
 </div>
+
+<style>
+.card { font-family: arial; font-size: 20px; text-align: center; color: black; background-color: white; }
+.header { margin-bottom: 20px; }
+.word { font-size: 32px; font-weight: bold; color: #2563eb; }
+.phonetics { font-family: monospace; color: #64748b; font-size: 16px; margin-top: 5px; }
+.context-section { margin-top: 30px; padding: 15px; background: #f8fafc; border-radius: 8px; text-align: left; }
+.paragraph { color: #334155; font-size: 16px; line-height: 1.5; margin-bottom: 10px; }
+.sentence-highlight { font-weight: bold; color: #0f172a; border-left: 4px solid #3b82f6; padding-left: 10px; }
+.target-word { color: #dc2626; font-style: italic; font-weight: bold; }
+.example-section { margin-top: 20px; font-style: italic; color: #475569; }
+.image-section img { max-width: 100%; border-radius: 8px; margin-top: 15px; }
+</style>
 `;
 
 const DEFAULT_ANKI_BACK = `
-<div class="card">
-  <div class="word">{{word}}</div>
-  <div class="phonetic">{{phonetic}}</div>
-  <hr>
-  <div class="meaning">{{translation}}</div>
-  <div class="sentence-translation">{{mixed_sentence}}</div>
-  <div class="context-paragraph">{{paragraph}}</div>
+<div class="card back">
+  <div class="header">
+    <div class="word">{{word}}</div>
+    <div class="phonetics">
+      <span class="us">🇺🇸 {{phonetic_us}}</span>
+      <span class="uk">🇬🇧 {{phonetic_uk}}</span>
+    </div>
+  </div>
+
+  <div class="meaning-section">
+    <div class="definition">{{def_cn}}</div>
+    <div class="tags">{{tags}}</div>
+  </div>
+
+  <div class="context-section">
+    <div class="paragraph">
+      {{paragraph_en_prefix}}<b class="target-word">{{word}}</b>{{paragraph_en_suffix}}
+    </div>
+    <div class="paragraph-trans">{{paragraph_src}}</div>
+  </div>
+
+  <div class="example-section">
+    <div class="dict-example">{{dict_example}}</div>
+    <div class="dict-example-trans">{{dict_example_trans}}</div>
+  </div>
+
+  <div class="video-section">
+    {{video}}
+  </div>
 </div>
+
+<style>
+.card { font-family: arial; font-size: 20px; text-align: center; color: black; background-color: white; }
+.meaning-section { margin: 20px 0; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; }
+.definition { font-size: 24px; font-weight: bold; color: #0f172a; }
+.tags { font-size: 12px; color: #64748b; margin-top: 5px; }
+.context-section { margin-top: 20px; text-align: left; background: #f8fafc; padding: 15px; border-radius: 8px; }
+.paragraph { margin-bottom: 10px; }
+.paragraph-trans { color: #64748b; font-size: 14px; }
+.target-word { color: #dc2626; font-style: italic; font-weight: bold; }
+.example-section { margin-top: 20px; text-align: left; }
+.dict-example { font-style: italic; font-weight: bold; }
+.dict-example-trans { color: #64748b; font-size: 16px; }
+.video-section video { width: 100%; border-radius: 8px; margin-top: 20px; }
+</style>
 `;
 
 export const DEFAULT_ANKI_CONFIG: AnkiConfig = {

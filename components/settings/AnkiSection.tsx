@@ -47,13 +47,18 @@ export const AnkiSection: React.FC<AnkiSectionProps> = ({ config, setConfig }) =
       englishDefinition: 'The occurrence and development of events by chance in a happy or beneficial way.',
       partOfSpeech: 'n.',
       
-      // Context: "Many scientific discoveries are a result of serendipity..."
-      contextSentence: '青霉素的发现是一个改变医学进程的令人高兴的 serendipity (意外机缘)。', // Mixed/ContextLingo style
-      mixedSentence: 'The discovery of penicillin was a happy serendipity (意外机缘).',
-      contextSentenceTranslation: 'The discovery of penicillin was a happy serendipity that changed the course of medicine.',
+      // Context Data
+      // Scenario: User was reading a Chinese article, and the API translated it.
+      // Source (Chinese): 许多科学发现都是机缘巧合的结果。青霉素的发现是一个改变医学进程的令人高兴的 serendipity (意外机缘)。
+      // Translation (English): Many scientific discoveries are a result of serendipity. The discovery of penicillin was a happy serendipity that changed the course of medicine.
       
       contextParagraph: '许多科学发现都是机缘巧合的结果。青霉素的发现是一个改变医学进程的令人高兴的 serendipity (意外机缘)。',
       contextParagraphTranslation: 'Many scientific discoveries are a result of serendipity. The discovery of penicillin was a happy serendipity that changed the course of medicine.',
+      
+      contextSentence: '青霉素的发现是一个改变医学进程的令人高兴的 serendipity (意外机缘)。',
+      contextSentenceTranslation: 'The discovery of penicillin was a happy serendipity that changed the course of medicine.',
+      
+      mixedSentence: 'The discovery of penicillin was a happy serendipity (意外机缘).',
       
       dictionaryExample: 'Nature has created wonderful things by serendipity.',
       dictionaryExampleTranslation: '大自然通过机缘巧合创造了奇妙的事物。',
@@ -120,8 +125,11 @@ export const AnkiSection: React.FC<AnkiSectionProps> = ({ config, setConfig }) =
       };
 
       // Helper to split text around the word (Case insensitive)
+      // This is for {{sentence_en_prefix}} etc.
+      // We look at the API Translated text (English)
       const splitAroundWord = (fullText: string, word: string) => {
           if (!fullText) return { a: '', e: '' };
+          // Simple regex split, taking first match
           const idx = fullText.toLowerCase().indexOf(word.toLowerCase());
           if (idx === -1) return { a: fullText, e: '' }; // Fallback
           return { a: fullText.substring(0, idx), e: fullText.substring(idx + word.length) };
@@ -130,12 +138,20 @@ export const AnkiSection: React.FC<AnkiSectionProps> = ({ config, setConfig }) =
       const sEnSplit = splitAroundWord(entry.contextSentenceTranslation || '', entry.text);
       const pEnSplit = splitAroundWord(entry.contextParagraphTranslation || '', entry.text);
 
+      // Audio URLs (Youdao API)
+      const audioUsUrl = `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(entry.text)}&type=2`;
+      const audioUkUrl = `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(entry.text)}&type=1`;
+      
       const map: Record<string, string> = {
           '{{word}}': entry.text,
           '{{phonetic_us}}': entry.phoneticUs || '',
           '{{phonetic_uk}}': entry.phoneticUk || '',
+          '{{audio_us}}': `<audio src="${audioUsUrl}" controls></audio>`,
+          '{{audio_uk}}': `<audio src="${audioUkUrl}" controls></audio>`,
+          
           '{{def_cn}}': entry.translation || '',
           '{{context_meaning}}': entry.translation || '', // Mapping to translation for now
+          
           '{{part_of_speech}}': entry.partOfSpeech || '',
           '{{tags}}': (entry.tags || []).join(', '),
           '{{collins_star}}': entry.importance ? '★'.repeat(entry.importance) : '',
@@ -144,16 +160,19 @@ export const AnkiSection: React.FC<AnkiSectionProps> = ({ config, setConfig }) =
           '{{dict_example}}': entry.dictionaryExample || '',
           '{{dict_example_trans}}': entry.dictionaryExampleTranslation || '',
           
-          '{{sentence_src}}': entry.contextSentence || '',
+          // Context (English Translation from API)
           '{{sentence_en}}': entry.contextSentenceTranslation || '',
           '{{sentence_en_prefix}}': sEnSplit.a,
           '{{sentence_en_suffix}}': sEnSplit.e,
           
-          '{{paragraph_src}}': entry.contextParagraph || '',
           '{{paragraph_en}}': entry.contextParagraphTranslation || '',
           '{{paragraph_en_prefix}}': pEnSplit.a,
           '{{paragraph_en_suffix}}': pEnSplit.e,
           
+          // Context (Original Source - Chinese)
+          '{{sentence_src}}': entry.contextSentence || '',
+          '{{paragraph_src}}': entry.contextParagraph || '',
+
           '{{roots}}': generateRootsHtml(entry.roots || []),
           '{{synonyms}}': generateListHtml(entry.synonyms || [], '近义词'),
           '{{phrases}}': generateListHtml(entry.phrases || [], '短语'),
@@ -258,20 +277,26 @@ export const AnkiSection: React.FC<AnkiSectionProps> = ({ config, setConfig }) =
      { code: '{{word}}', desc: '英文单词' },
      { code: '{{phonetic_us}}', desc: '美式音标' },
      { code: '{{phonetic_uk}}', desc: '英式音标' },
+     { code: '{{audio_us}}', desc: '美式发音 (Audio)' },
+     { code: '{{audio_uk}}', desc: '英式发音 (Audio)' },
      { code: '{{def_cn}}', desc: '单词中文释义' },
      { code: '{{context_meaning}}', desc: '单词在中文原文中的含义' },
      { code: '{{dict_example}}', desc: '英文例句' },
      { code: '{{dict_example_trans}}', desc: '英文例句翻译' },
      { code: '{{image}}', desc: '单词图片 (IMG标签)' },
      { code: '{{video}}', desc: '视频讲解 (VIDEO标签)' },
+     
      { code: '{{sentence_en}}', desc: '句子(API翻译后英文)' },
      { code: '{{sentence_en_prefix}}', desc: '句子前半部分 (译文)' },
      { code: '{{sentence_en_suffix}}', desc: '句子后半部分 (译文)' },
+     
      { code: '{{paragraph_en}}', desc: '段落(API翻译后英文)' },
      { code: '{{paragraph_en_prefix}}', desc: '段落前半部分 (译文)' },
      { code: '{{paragraph_en_suffix}}', desc: '段落后半部分 (译文)' },
+     
      { code: '{{sentence_src}}', desc: '句子(中文原文)' },
      { code: '{{paragraph_src}}', desc: '段落(中文原文)' },
+     
      { code: '{{roots}}', desc: '同根词 (列表HTML)' },
      { code: '{{synonyms}}', desc: '近义词 (列表HTML)' },
      { code: '{{phrases}}', desc: '常用短语 (列表HTML)' },
@@ -357,65 +382,77 @@ export const AnkiSection: React.FC<AnkiSectionProps> = ({ config, setConfig }) =
            
            <hr className="border-slate-100" />
 
-           {/* 2. Template Editor Section */}
-           <div>
-              <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-bold text-slate-800 flex items-center">
-                     <Code className="w-4 h-4 mr-2 text-slate-500"/> 
-                     卡片模板编辑器
-                  </h3>
-                  <button 
-                     onClick={() => setShowVarHelp(true)}
-                     className="flex items-center text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg shadow-sm shadow-blue-200 transition"
-                  >
-                       <BookOpen className="w-4 h-4 mr-2"/> 打开变量参考表
-                  </button>
-              </div>
+           {/* 2. & 3. Split Layout for Editor and Preview */}
+           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                {/* Left Column: Template Editor */}
+                <div className="flex flex-col h-full">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-sm font-bold text-slate-800 flex items-center">
+                            <Code className="w-4 h-4 mr-2 text-slate-500"/> 
+                            卡片模板编辑器
+                        </h3>
+                        <button 
+                            onClick={() => setShowVarHelp(true)}
+                            className="flex items-center text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg shadow-sm shadow-blue-200 transition"
+                        >
+                            <BookOpen className="w-4 h-4 mr-2"/> 变量参考
+                        </button>
+                    </div>
 
-              <div className="flex flex-col bg-white rounded-xl border border-slate-300 shadow-sm overflow-hidden h-[400px]">
-                  <div className="bg-slate-50 border-b border-slate-200 p-2 flex items-center gap-1">
-                    <button 
-                        onClick={() => setActiveTemplate('front')}
-                        className={`px-6 py-2 text-xs font-bold rounded-lg transition ${activeTemplate === 'front' ? 'bg-white text-blue-600 shadow-sm ring-1 ring-slate-200' : 'text-slate-500 hover:bg-slate-100'}`}
-                    >
-                        正面 (Front)
-                    </button>
-                    <button 
-                        onClick={() => setActiveTemplate('back')}
-                        className={`px-6 py-2 text-xs font-bold rounded-lg transition ${activeTemplate === 'back' ? 'bg-white text-blue-600 shadow-sm ring-1 ring-slate-200' : 'text-slate-500 hover:bg-slate-100'}`}
-                    >
-                        背面 (Back)
-                    </button>
-                  </div>
-                  <div className="flex-1 relative group">
-                      <textarea 
-                           className="w-full h-full p-4 font-mono text-sm text-slate-800 bg-white resize-none focus:outline-none focus:bg-slate-50/30 transition-colors leading-relaxed"
-                           value={activeTemplate === 'front' ? config.templates.frontTemplate : config.templates.backTemplate}
-                           onChange={(e) => {
-                              const key = activeTemplate === 'front' ? 'frontTemplate' : 'backTemplate';
-                              setConfig({...config, templates: {...config.templates, [key]: e.target.value}});
-                           }}
-                           spellCheck={false}
-                           placeholder="在此输入 HTML 模板代码..."
-                      />
-                  </div>
-              </div>
+                    <div className="flex flex-col bg-white rounded-xl border border-slate-300 shadow-sm overflow-hidden flex-1 min-h-[500px]">
+                        <div className="bg-slate-50 border-b border-slate-200 p-2 flex items-center gap-1">
+                            <button 
+                                onClick={() => setActiveTemplate('front')}
+                                className={`px-6 py-2 text-xs font-bold rounded-lg transition ${activeTemplate === 'front' ? 'bg-white text-blue-600 shadow-sm ring-1 ring-slate-200' : 'text-slate-500 hover:bg-slate-100'}`}
+                            >
+                                正面 (Front)
+                            </button>
+                            <button 
+                                onClick={() => setActiveTemplate('back')}
+                                className={`px-6 py-2 text-xs font-bold rounded-lg transition ${activeTemplate === 'back' ? 'bg-white text-blue-600 shadow-sm ring-1 ring-slate-200' : 'text-slate-500 hover:bg-slate-100'}`}
+                            >
+                                背面 (Back)
+                            </button>
+                        </div>
+                        <div className="flex-1 relative group">
+                            <textarea 
+                                className="w-full h-full p-4 font-mono text-sm text-slate-800 bg-white resize-none focus:outline-none focus:bg-slate-50/30 transition-colors leading-relaxed"
+                                value={activeTemplate === 'front' ? config.templates.frontTemplate : config.templates.backTemplate}
+                                onChange={(e) => {
+                                    const key = activeTemplate === 'front' ? 'frontTemplate' : 'backTemplate';
+                                    setConfig({...config, templates: {...config.templates, [key]: e.target.value}});
+                                }}
+                                spellCheck={false}
+                                placeholder="在此输入 HTML 模板代码..."
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Right Column: Preview */}
+                <div className="flex flex-col h-full">
+                    <div className="flex items-center justify-between mb-4 h-[38px]">
+                        <h3 className="text-sm font-bold text-slate-800 flex items-center">
+                            <Eye className="w-4 h-4 mr-2 text-slate-500"/> 
+                            卡片效果预览 ({activeTemplate === 'front' ? 'Front' : 'Back'})
+                        </h3>
+                        <span className="text-[10px] bg-slate-100 px-2 py-1 rounded border border-slate-200 text-slate-400">Mock Data</span>
+                    </div>
+
+                    <div className="bg-slate-200/50 rounded-xl border border-slate-300 shadow-inner overflow-hidden flex flex-col flex-1 min-h-[500px]">
+                        <div className="p-6 overflow-y-auto flex-1 flex justify-center items-start">
+                            <div className="bg-white rounded-lg shadow-lg border border-slate-200 p-0 min-w-[320px] max-w-[400px] w-full prose prose-sm overflow-hidden relative break-words">
+                                <div dangerouslySetInnerHTML={{ 
+                                    __html: generateCardContent(previewEntry, activeTemplate === 'front' ? config.templates.frontTemplate : config.templates.backTemplate) 
+                                }} />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
            </div>
 
-           {/* 3. Preview Section */}
-           <div className="bg-slate-50 rounded-xl border border-slate-200 shadow-inner overflow-hidden flex flex-col">
-              <div className="px-4 py-3 bg-slate-100 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wider flex justify-between items-center">
-                  <span className="flex items-center"><Eye className="w-4 h-4 mr-2"/> 卡片效果预览 ({activeTemplate === 'front' ? 'Front' : 'Back'})</span>
-                  <span className="text-[10px] bg-white px-2 py-0.5 rounded border border-slate-200 text-slate-400">Mock Data</span>
-              </div>
-              <div className="p-8 overflow-y-auto max-h-[600px] flex justify-center bg-slate-200/50">
-                  <div className="bg-white rounded-lg shadow-lg border border-slate-200 p-0 min-w-[375px] max-w-[500px] w-full min-h-[400px] prose prose-sm overflow-hidden relative">
-                      <div dangerouslySetInnerHTML={{ 
-                          __html: generateCardContent(previewEntry, activeTemplate === 'front' ? config.templates.frontTemplate : config.templates.backTemplate) 
-                      }} />
-                  </div>
-              </div>
-           </div>
         </div>
 
         {/* Variable Reference Modal */}

@@ -183,15 +183,13 @@ const DEFAULT_ANKI_FRONT = `
       <span class="us">🇺🇸 {{phonetic_us}}</span>
       <span class="uk">🇬🇧 {{phonetic_uk}}</span>
     </div>
-    <!-- 默认朗读脚本需在 Anki 模板设置中添加，此处仅为结构 -->
+    <div class="hidden-audio">{{audio_us}}</div>
   </div>
 
   <div class="context-section">
+    <!-- 显示单词出现的段落，所在句子加黑加粗，所在单词加粗、倾斜、颜色红色 -->
     <div class="paragraph">
-      {{paragraph_en_prefix}}<b class="target-word">{{word}}</b>{{paragraph_en_suffix}}
-    </div>
-    <div class="sentence-highlight">
-      {{sentence_en_prefix}}<b class="target-word">{{word}}</b>{{sentence_en_suffix}}
+       {{paragraph_en_prefix}}<span class="sentence-highlight">{{sentence_en_prefix}}<span class="target-word">{{word}}</span>{{sentence_en_suffix}}</span>{{paragraph_en_suffix}}
     </div>
   </div>
 
@@ -202,19 +200,35 @@ const DEFAULT_ANKI_FRONT = `
   <div class="image-section">
     {{image}}
   </div>
+
+  <!-- 刚进入卡片默认读三遍单词 -->
+  <script>
+    (function() {
+      var audio = document.querySelector('.hidden-audio audio');
+      if(audio) {
+        var count = 0;
+        audio.onended = function() {
+          count++;
+          if(count < 3) { setTimeout(function(){ audio.play(); }, 500); }
+        };
+        audio.play().catch(function(e){ console.log(e); });
+      }
+    })();
+  </script>
 </div>
 
 <style>
-.card { font-family: arial; font-size: 20px; text-align: center; color: black; background-color: white; }
+.card { font-family: arial; font-size: 20px; text-align: center; color: black; background-color: white; padding: 20px; }
 .header { margin-bottom: 20px; }
-.word { font-size: 32px; font-weight: bold; color: #2563eb; }
-.phonetics { font-family: monospace; color: #64748b; font-size: 16px; margin-top: 5px; }
-.context-section { margin-top: 30px; padding: 15px; background: #f8fafc; border-radius: 8px; text-align: left; }
-.paragraph { color: #334155; font-size: 16px; line-height: 1.5; margin-bottom: 10px; }
-.sentence-highlight { font-weight: bold; color: #0f172a; border-left: 4px solid #3b82f6; padding-left: 10px; }
+.word { font-size: 36px; font-weight: bold; color: #1e293b; margin-bottom: 8px; }
+.phonetics { font-family: monospace; color: #64748b; font-size: 16px; }
+.context-section { margin-top: 30px; padding: 20px; background: #f8fafc; border-radius: 12px; text-align: left; border: 1px solid #e2e8f0; }
+.paragraph { color: #475569; font-size: 16px; line-height: 1.6; }
+.sentence-highlight { font-weight: 800; color: #0f172a; }
 .target-word { color: #dc2626; font-style: italic; font-weight: bold; }
-.example-section { margin-top: 20px; font-style: italic; color: #475569; }
-.image-section img { max-width: 100%; border-radius: 8px; margin-top: 15px; }
+.example-section { margin-top: 20px; font-style: italic; color: #64748b; text-align: left; padding: 0 10px; border-left: 3px solid #cbd5e1; }
+.image-section img { max-width: 100%; max-height: 300px; border-radius: 12px; margin-top: 25px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+.hidden-audio { display: none; }
 </style>
 `;
 
@@ -228,16 +242,19 @@ const DEFAULT_ANKI_BACK = `
     </div>
   </div>
 
-  <div class="meaning-section">
-    <div class="definition">{{def_cn}}</div>
-    <div class="tags">{{tags}}</div>
-  </div>
-
   <div class="context-section">
     <div class="paragraph">
-      {{paragraph_en_prefix}}<b class="target-word">{{word}}</b>{{paragraph_en_suffix}}
+       {{paragraph_en_prefix}}<span class="sentence-highlight">{{sentence_en_prefix}}<span class="target-word">{{word}}</span>{{sentence_en_suffix}}</span>{{paragraph_en_suffix}}
     </div>
     <div class="paragraph-trans">{{paragraph_src}}</div>
+  </div>
+
+  <div class="definition-section">
+     <div class="meaning">{{def_cn}}</div>
+     <div class="meta">
+        <span class="pos">{{part_of_speech}}</span>
+        <span class="star">{{collins_star}}</span>
+     </div>
   </div>
 
   <div class="example-section">
@@ -248,21 +265,40 @@ const DEFAULT_ANKI_BACK = `
   <div class="video-section">
     {{video}}
   </div>
+
+  <div class="info-grid">
+     {{roots}}
+     {{synonyms}}
+     {{phrases}}
+     <div class="inflections"><b>变化:</b> {{inflections}}</div>
+  </div>
 </div>
 
 <style>
-.card { font-family: arial; font-size: 20px; text-align: center; color: black; background-color: white; }
-.meaning-section { margin: 20px 0; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; }
-.definition { font-size: 24px; font-weight: bold; color: #0f172a; }
-.tags { font-size: 12px; color: #64748b; margin-top: 5px; }
-.context-section { margin-top: 20px; text-align: left; background: #f8fafc; padding: 15px; border-radius: 8px; }
-.paragraph { margin-bottom: 10px; }
-.paragraph-trans { color: #64748b; font-size: 14px; }
+.card { font-family: arial; font-size: 18px; text-align: center; color: black; background-color: white; padding: 20px; }
+.word { font-size: 28px; font-weight: bold; color: #1e293b; }
+.phonetics { font-family: monospace; color: #64748b; font-size: 14px; margin-bottom: 20px; }
+
+.context-section { text-align: left; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
+.paragraph { margin-bottom: 10px; font-size: 15px; line-height: 1.5; color: #475569; }
+.paragraph-trans { color: #64748b; font-size: 14px; border-top: 1px dashed #cbd5e1; padding-top: 8px; }
+.sentence-highlight { font-weight: 800; color: #0f172a; }
 .target-word { color: #dc2626; font-style: italic; font-weight: bold; }
-.example-section { margin-top: 20px; text-align: left; }
-.dict-example { font-style: italic; font-weight: bold; }
-.dict-example-trans { color: #64748b; font-size: 16px; }
-.video-section video { width: 100%; border-radius: 8px; margin-top: 20px; }
+
+.definition-section { background: #fff7ed; border: 1px solid #ffedd5; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+.meaning { font-size: 20px; font-weight: bold; color: #9a3412; }
+.meta { font-size: 12px; color: #fdba74; margin-top: 5px; }
+.pos { margin-right: 10px; font-weight: bold; color: #ea580c; background: #fff; padding: 2px 6px; border-radius: 4px; }
+
+.example-section { text-align: left; border-left: 3px solid #3b82f6; padding-left: 12px; margin-bottom: 20px; }
+.dict-example { font-style: italic; color: #334155; font-weight: 500; }
+.dict-example-trans { color: #64748b; font-size: 14px; margin-top: 4px; }
+
+.video-section video { width: 100%; border-radius: 12px; margin-top: 10px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+
+.info-grid { display: grid; grid-template-columns: 1fr; gap: 10px; text-align: left; font-size: 14px; color: #475569; margin-top: 20px; border-top: 1px solid #f1f5f9; padding-top: 15px; }
+.info-list ul { margin: 5px 0 0 20px; padding: 0; }
+.info-list li { margin-bottom: 2px; }
 </style>
 `;
 

@@ -180,10 +180,17 @@ const DEFAULT_ANKI_FRONT = `
   <div class="header">
     <div class="word">{{word}}</div>
     <div class="phonetics">
-      <span class="us">🇺🇸 {{phonetic_us}}</span>
-      <span class="uk">🇬🇧 {{phonetic_uk}}</span>
+      <div class="phonetic-group">
+        <span class="flag">🇺🇸</span> 
+        <span class="ipa">{{phonetic_us}}</span>
+        {{audio_us}}
+      </div>
+      <div class="phonetic-group">
+        <span class="flag">🇬🇧</span> 
+        <span class="ipa">{{phonetic_uk}}</span>
+        {{audio_uk}}
+      </div>
     </div>
-    <div class="hidden-audio">{{audio_us}}</div>
   </div>
 
   <div class="context-section">
@@ -201,19 +208,12 @@ const DEFAULT_ANKI_FRONT = `
     {{image}}
   </div>
 
-  <!-- 刚进入卡片默认读三遍单词 -->
+  <!-- 刚进入卡片默认读三遍单词 (可选，这里依赖 audio_us 元素) -->
   <script>
-    (function() {
-      var audio = document.querySelector('.hidden-audio audio');
-      if(audio) {
-        var count = 0;
-        audio.onended = function() {
-          count++;
-          if(count < 3) { setTimeout(function(){ audio.play(); }, 500); }
-        };
-        audio.play().catch(function(e){ console.log(e); });
-      }
-    })();
+    setTimeout(function() {
+      var btn = document.querySelector('.phonetics .audio-btn audio');
+      if(btn) { btn.play().catch(function(){}); }
+    }, 500);
   </script>
 </div>
 
@@ -221,14 +221,18 @@ const DEFAULT_ANKI_FRONT = `
 .card { font-family: arial; font-size: 20px; text-align: center; color: black; background-color: white; padding: 20px; }
 .header { margin-bottom: 20px; }
 .word { font-size: 36px; font-weight: bold; color: #1e293b; margin-bottom: 8px; }
-.phonetics { font-family: monospace; color: #64748b; font-size: 16px; }
+
+.phonetics { display: flex; justify-content: center; gap: 20px; color: #64748b; font-size: 16px; font-family: monospace; }
+.phonetic-group { display: flex; align-items: center; }
+.flag { margin-right: 6px; filter: grayscale(0.2); font-size: 18px; }
+.ipa { margin-right: 4px; }
+
 .context-section { margin-top: 30px; padding: 20px; background: #f8fafc; border-radius: 12px; text-align: left; border: 1px solid #e2e8f0; }
 .paragraph { color: #475569; font-size: 16px; line-height: 1.6; }
 .sentence-highlight { font-weight: 800; color: #0f172a; }
 .target-word { color: #dc2626; font-style: italic; font-weight: bold; }
 .example-section { margin-top: 20px; font-style: italic; color: #64748b; text-align: left; padding: 0 10px; border-left: 3px solid #cbd5e1; }
 .image-section img { max-width: 100%; max-height: 300px; border-radius: 12px; margin-top: 25px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-.hidden-audio { display: none; }
 </style>
 `;
 
@@ -237,8 +241,16 @@ const DEFAULT_ANKI_BACK = `
   <div class="header">
     <div class="word">{{word}}</div>
     <div class="phonetics">
-      <span class="us">🇺🇸 {{phonetic_us}}</span>
-      <span class="uk">🇬🇧 {{phonetic_uk}}</span>
+      <div class="phonetic-group">
+        <span class="flag">🇺🇸</span> 
+        <span class="ipa">{{phonetic_us}}</span>
+        {{audio_us}}
+      </div>
+      <div class="phonetic-group">
+        <span class="flag">🇬🇧</span> 
+        <span class="ipa">{{phonetic_uk}}</span>
+        {{audio_uk}}
+      </div>
     </div>
   </div>
 
@@ -277,7 +289,11 @@ const DEFAULT_ANKI_BACK = `
 <style>
 .card { font-family: arial; font-size: 18px; text-align: center; color: black; background-color: white; padding: 20px; }
 .word { font-size: 28px; font-weight: bold; color: #1e293b; }
-.phonetics { font-family: monospace; color: #64748b; font-size: 14px; margin-bottom: 20px; }
+
+.phonetics { display: flex; justify-content: center; gap: 20px; color: #64748b; font-size: 14px; margin-bottom: 20px; font-family: monospace; }
+.phonetic-group { display: flex; align-items: center; }
+.flag { margin-right: 6px; filter: grayscale(0.2); font-size: 16px; }
+.ipa { margin-right: 4px; }
 
 .context-section { text-align: left; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
 .paragraph { margin-bottom: 10px; font-size: 15px; line-height: 1.5; color: #475569; }
